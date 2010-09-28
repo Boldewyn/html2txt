@@ -3,6 +3,7 @@
 
 from BeautifulSoup import BeautifulSoup
 from .rules import apply_rules as _ar
+from .tools import Config
 
 
 def convert(file_or_name, **config):
@@ -22,8 +23,9 @@ def convert_string(string, **config):
 
 def _convert(soup, **config):
     """"""
-    config["textwidth"] = config.get("textwidth", 78)
-    config["class_prefix"] = config.get("class_prefix", "h2t")
-    config["pageheight"] = config.get("paged", 50)
-    config["align"] = config.get("align", "justify")
+    config['textwidth'] = config.get('textwidth', 78)
+    config['class_prefix'] = config.get('class_prefix', "h2t")
+    config['pageheight'] = config.get('paged', 50)
+    config['align'] = config.get('align', "justify")
+    #config.
     return _ar(soup.body, **config)

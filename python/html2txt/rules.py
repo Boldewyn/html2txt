@@ -31,20 +31,22 @@ span = inline
 def block(node, first=u"", before=u"", after=u"", **config):
     """Generic block element handling"""
     string = u""
-    tmp = first
+    tmp = u""
     config['textwidth'] = config['textwidth'] - len(before) - len(after)
     for child in node.contents:
         if hasattr(child, 'contents'):
             if child.name in BLOCK_ELEMENTS:
-                string += format_block(tmp, **config)
+                string += format_block(first+normalize_space(tmp, True),
+                            **config)
                 string += apply_rules(child, **config)
-                tmp = ""
+                tmp = first = ""
             else:
                 tmp += apply_rules(child, **config)
         else:
             tmp += child
-    if tmp:
-        string += format_block(tmp, **config)
+    if first + tmp:
+        string += format_block(first+normalize_space(tmp, True),
+                    **config)
     if before:
         string = join_blocks(before, string)
     if after:
@@ -60,6 +62,29 @@ def p(node, **config):
        getattr(node.previousSibling, 'name', '') == "p":
         indent = u"  "
     return block(node, first=indent, **config)
+
+
+def h1(node, **config):
+    """"""
+    string = u""
+    for child in node.contents:
+        if hasattr(child, 'contents'):
+            string += apply_rules(child, **config)
+        else:
+            string += normalize_space(child, True)
+    return format_block(underline(center(space(string, **config),
+            **config), char="=", **config), **config)
+
+
+def pre(node, **config):
+    """"""
+    string = u""
+    for child in node.contents:
+        if hasattr(child, 'contents'):
+            string += apply_rules(child, **config)
+        else:
+            string += child
+    return format_pre(string, **config)
 
 
 def br(node, **config):
@@ -85,20 +110,25 @@ var = em
 
 
 def q(node, **config):
-    return OPEN_QUOTE + inline(node, **config) + CLOSE_QUOTE
+    return (config['open_quote'] + inline(node, **config) +
+            config['close_quote'])
 
 
 def code(node, **config):
-    return "[" + inline(node, **config) + "]"
+    return "`" + inline(node, **config) + "`"
 samp = code
 tt = code
 
 
 def a(node, **config):
     string = inline(node, **config)
-    if 'href' in node and node['href'] != node.string:
+    if node.get('href', False) and node['href'] not in string:
         string += u" <"+node['href']+u">"
     return string
+
+
+def img(node, **config):
+    return node.get("alt", u"")
 
 
 def rt(node, **config):
